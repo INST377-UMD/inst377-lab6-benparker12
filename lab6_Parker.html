@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INST377 - Lab 6</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; width: 100%; }
+        body { font-family: Arial, sans-serif; }
+    </style>
+</head>
+<body>
+    <h1>INST377 - Lab 6</h1>
+    <h2>Map of US</h2>
+    <div id="map"></div>
+    <div id="localities">
+        <p>Marker 1: <span id="locality1"></span></p>
+        <p>Marker 2: <span id="locality2"></span></p>
+        <p>Marker 3: <span id="locality3"></span></p>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([37.0902, -95.7129], 4); // Center of US
+
+        // Set up tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        // Random coordinate generator
+        function getRandomInRange(from, to, fixed) {
+            return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+        }
+
+        // Generate random coordinates
+        var lat1 = getRandomInRange(30, 35, 3);
+        var long1 = getRandomInRange(-90, -100, 3);
+
+        var lat2 = getRandomInRange(30, 35, 3);
+        var long2 = getRandomInRange(-90, -100, 3);
+
+        var lat3 = getRandomInRange(30, 35, 3);
+        var long3 = getRandomInRange(-90, -100, 3);
+
+        // Place markers on the map
+        var marker1 = L.marker([lat1, long1]).addTo(map);
+        var marker2 = L.marker([lat2, long2]).addTo(map);
+        var marker3 = L.marker([lat3, long3]).addTo(map);
+
+        // Reverse geocoding API call
+        function getLocality(lat, long) {
+            const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${long}&localityLanguage=en`;
+
+            return fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    return data.locality || 'Unknown locality';
+                })
+                .catch(error => {
+                    console.error('Error fetching locality:', error);
+                    return 'Error fetching locality';
+                });
+        }
+
+        // Fetch and display localities
+        getLocality(lat1, long1).then(locality => {
+            marker1.bindPopup(`Marker 1: ${lat1}, ${long1}<br>Locality: ${locality}`).openPopup();
+            document.getElementById('locality1').textContent = `${lat1}, ${long1} - ${locality}`;
+        });
+
+        getLocality(lat2, long2).then(locality => {
+            marker2.bindPopup(`Marker 2: ${lat2}, ${long2}<br>Locality: ${locality}`).openPopup();
+            document.getElementById('locality2').textContent = `${lat2}, ${long2} - ${locality}`;
+        });
+
+        getLocality(lat3, long3).then(locality => {
+            marker3.bindPopup(`Marker 3: ${lat3}, ${long3}<br>Locality: ${locality}`).openPopup();
+            document.getElementById('locality3').textContent = `${lat3}, ${long3} - ${locality}`;
+        });
+    </script>
+</body>
+</html>
